@@ -1,20 +1,35 @@
 import 'dotenv/config'
-import { runLLM } from './src/llm'
-import { addMessages, getMessages } from './src/memory'
+import { runAgent } from './src/agent'
+import { exampleFunctionDeclarations } from './src/toolRunner'
+import type { Tool } from './types'
+
 const userMessage = process.argv[2]
 
 if (!userMessage) {
   console.error('Please provide a message')
+  console.log('Example: npm start "What\'s the weather in San Francisco?"')
+  console.log('Example: npm start "Calculate 25 * 4 + 10"')
   process.exit(1)
 }
 
-await addMessages([{ role: 'user', content: userMessage }])
-const messages = await getMessages()
+// Create tools array with function declarations
+const tools: Tool[] = [
+  {
+    functionDeclarations: exampleFunctionDeclarations,
+  },
+]
 
-const response = await runLLM({
-  messages,
+// Run the agent with function calling enabled
+console.log('🤖 Running agent with function calling...')
+console.log(
+  'Tools available:',
+  exampleFunctionDeclarations.map((f) => f.name).join(', ')
+)
+console.log('Tool choice: AUTO, Parallel: false\n')
+
+await runAgent({
+  messages: [{ role: 'user', parts: [{ text: userMessage }] }],
+  tools,
 })
 
-await addMessages([{ role: 'assistant', content: response }])
-
-console.log(response)
+console.log('\n✅ Final response received!')
