@@ -91,11 +91,76 @@ export const exampleTools = {
       return { error: 'Invalid expression' }
     }
   },
+
+  // File system tool example
+  read_file: async ({ toolArgs }: { toolArgs: { path: string } }) => {
+    const { path } = toolArgs
+    try {
+      // In a real application, you would read the actual file
+      // For demo purposes, we'll return mock data
+      return {
+        path,
+        content: `Mock file content for ${path}`,
+        size: 1024,
+        lastModified: new Date().toISOString(),
+      }
+    } catch (error) {
+      console.error('File read error:', error)
+      return { error: `Failed to read file: ${path}` }
+    }
+  },
+
+  // Web search tool example
+  web_search: async ({ toolArgs }: { toolArgs: { query: string } }) => {
+    const { query } = toolArgs
+    // Mock search results - in real app, call search API
+    return {
+      query,
+      results: [
+        {
+          title: `Search result for: ${query}`,
+          url: `https://example.com/search?q=${encodeURIComponent(query)}`,
+          snippet: `This is a mock search result for the query "${query}". In a real implementation, this would return actual web search results.`,
+        },
+        {
+          title: `Another result for: ${query}`,
+          url: `https://example.org/info?q=${encodeURIComponent(query)}`,
+          snippet: `Additional information related to "${query}" would appear here.`,
+        },
+      ],
+    }
+  },
+
+  // Task planning tool example
+  create_plan: async ({
+    toolArgs,
+  }: {
+    toolArgs: { task: string; steps?: string[] }
+  }) => {
+    const { task, steps } = toolArgs
+    const defaultSteps = [
+      'Analyze the requirements',
+      'Break down the task into smaller components',
+      'Execute each component step by step',
+      'Validate the results',
+      'Provide final summary',
+    ]
+
+    return {
+      task,
+      plan: steps || defaultSteps,
+      estimatedTime: '15-30 minutes',
+      created: new Date().toISOString(),
+    }
+  },
 }
 
 // Register example tools
 registerTool('get_weather', exampleTools.get_weather)
 registerTool('calculate', exampleTools.calculate)
+registerTool('read_file', exampleTools.read_file)
+registerTool('web_search', exampleTools.web_search)
+registerTool('create_plan', exampleTools.create_plan)
 
 // Example function declarations
 export const exampleFunctionDeclarations: FunctionDeclaration[] = [
@@ -124,4 +189,46 @@ export const exampleFunctionDeclarations: FunctionDeclaration[] = [
     },
     required: ['expression'],
   }),
+  createFunctionDeclaration('read_file', 'Read the contents of a file', {
+    type: 'OBJECT',
+    properties: {
+      path: {
+        type: 'STRING',
+        description: 'The file path to read from',
+      },
+    },
+    required: ['path'],
+  }),
+  createFunctionDeclaration('web_search', 'Search the web for information', {
+    type: 'OBJECT',
+    properties: {
+      query: {
+        type: 'STRING',
+        description: 'The search query to find information about',
+      },
+    },
+    required: ['query'],
+  }),
+  createFunctionDeclaration(
+    'create_plan',
+    'Create a plan for completing a task',
+    {
+      type: 'OBJECT',
+      properties: {
+        task: {
+          type: 'STRING',
+          description: 'The task that needs to be planned',
+        },
+        steps: {
+          type: 'ARRAY',
+          description: 'Optional array of custom steps for the plan',
+          items: {
+            type: 'STRING',
+            description: 'A step in the plan',
+          },
+        },
+      },
+      required: ['task'],
+    }
+  ),
 ]
